@@ -53,9 +53,9 @@ public class MultiThreadMain {
         t11.start();
         t22.start();
 
-        //thread using lamdda
+        //thread using lambda
         Thread tl1 = new Thread(() -> {
             bankAccount.withdraw(1000);
-        });
+        }, "Thread 1");
     }
 }
