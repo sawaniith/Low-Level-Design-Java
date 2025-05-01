@@ -1,41 +1,64 @@
 package DesignParkingLot.Models;
 
-import DesignParkingLot.Models.Floor.ParkingFloor;
 import DesignParkingLot.Models.Gate.EntryGate;
 import DesignParkingLot.Models.Gate.ExitGate;
 import DesignParkingLot.Models.ParkingSpot.ParkingSpot;
 import DesignParkingLot.Models.Vehicle.Vehicle;
-
-import java.util.Date;
+import DesignParkingLot.PricingStrategy.PricingStrategy;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ParkingLot {
-    private List<ParkingFloor> floors;
+    private static ParkingLot instance = null;
+    private final List<ParkingFloor> floors = new ArrayList<>();
+    private final List<EntryGate> entryGates = new ArrayList<>();
+    private final List<ExitGate> exitGates = new ArrayList<>();
+    private final Map<String, Ticket> tickets = new ConcurrentHashMap<>();
+    private PricingStrategy pricingStrategy;
 
-    public ParkingLot(List<ParkingFloor> floors) {
-        this.floors = floors;
+    private ParkingLot() {}
+
+    public static synchronized ParkingLot getInstance() {
+        if (instance == null) instance = new ParkingLot();
+        return instance;
     }
 
-    public ParkingSpot findAndAssignSpot(Vehicle vehicle) {
+    public void setPricingStrategy(PricingStrategy strategy) {
+        this.pricingStrategy = strategy;
+    }
+
+    public void addFloor(ParkingFloor floor) {
+        floors.add(floor);
+    }
+
+    public void addEntryGate(String id) {
+        entryGates.add(new EntryGate(id, this));
+    }
+
+    public void addExitGate(String id) {
+        exitGates.add(new ExitGate(id, pricingStrategy, tickets));
+    }
+
+    public List<EntryGate> getEntryGates() {
+        return entryGates;
+    }
+
+    public List<ExitGate> getExitGates() {
+        return exitGates;
+    }
+
+    public ParkingSpot assignSpot(Vehicle vehicle) {
         for (ParkingFloor floor : floors) {
-            ParkingSpot spot = floor.findSpot(vehicle);
-            if (spot != null) {
-                return spot; // Spot found, return it
-            }
+            Optional<ParkingSpot> spot = floor.getAvailableSpot(vehicle);
+            if (spot.isPresent()) return spot.get();
         }
-        System.out.println("Parking is Full");
-        return null; // No spot available
+        return null;
     }
 
-    public int getSpotsCount(){
-        int count=0;
-        for (ParkingFloor floor : floors) {
-            count += floor.countSpot();
-        }
-        return count;
-    }
-
-    public void freeSpot(ParkingSpot spot, Date startTime, Date endTime) {
-        spot.removeVehicle(startTime, endTime);
+    public void storeTicket(Ticket ticket) {
+        tickets.put(ticket.ticketId, ticket);
     }
 }

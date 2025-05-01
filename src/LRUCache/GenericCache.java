@@ -60,6 +60,11 @@ class GenericCache<K, V> {
     private void removeExpiredKeys() {
         expiryMap.keySet().removeIf(this::isExpired);
         cache.keySet().removeIf(this::isExpired);
+//        for(K k : expiryMap.keySet()){
+//            if(isExpired(k)){
+//                expiryMap.remove(k);
+//            }
+//        }
     }
 
     public void shutdown() {

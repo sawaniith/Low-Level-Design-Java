@@ -7,22 +7,19 @@ import DesignParkingLot.Models.Vehicle.Vehicle;
 
 import java.util.UUID;
 
-public class EntryGate extends Gate{
+public class EntryGate {
+    private final String gateId;
+    private final ParkingLot parkingLot;
 
-    public EntryGate(int gateId, ParkingLot parkingLot) {
-        super(gateId, parkingLot);
+    public EntryGate(String gateId, ParkingLot lot) {
+        this.gateId = gateId;
+        this.parkingLot = lot;
     }
 
-    public Ticket generateTicket(Vehicle vehicle) {
-        ParkingSpot spot = parkingLot.findAndAssignSpot(vehicle);
-        if (spot != null) {
-            spot.parkVehicle(vehicle);
-            return new Ticket(UUID.randomUUID().toString(), vehicle, spot);
-        }
-        return null;
-    }
-
-    public int getspotscnt(){
-        return parkingLot.getSpotsCount();
+    public Ticket enter(Vehicle vehicle) {
+        ParkingSpot spot = parkingLot.assignSpot(vehicle);
+        if (spot == null || !spot.assignVehicle(vehicle)) return null;
+        String ticketId = UUID.randomUUID().toString();
+        return new Ticket(ticketId, vehicle, spot, this);
     }
 }

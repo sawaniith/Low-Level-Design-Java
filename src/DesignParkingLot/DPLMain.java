@@ -1,46 +1,66 @@
 package DesignParkingLot;
 
 import DesignParkingLot.Enums.VehicleType;
-import DesignParkingLot.Factory.VehicleFactory;
-import DesignParkingLot.Models.Floor.ParkingFloor;
 import DesignParkingLot.Models.Gate.EntryGate;
 import DesignParkingLot.Models.Gate.ExitGate;
+import DesignParkingLot.Models.ParkingFloor;
 import DesignParkingLot.Models.ParkingLot;
-import DesignParkingLot.Models.ParkingSpot.FwParkingSpot;
-import DesignParkingLot.Models.ParkingSpot.ParkingSpot;
-import DesignParkingLot.Models.ParkingSpot.TwParkingSpot;
-import DesignParkingLot.Models.ParkingSpotManager.FourWheelerSpotManager;
-import DesignParkingLot.Models.ParkingSpotManager.ParkingSpotManager;
-import DesignParkingLot.Models.ParkingSpotManager.TwoWheelerSpotManager;
+import DesignParkingLot.Models.ParkingSpot.FourWheelerSpot;
+import DesignParkingLot.Models.ParkingSpot.TwoWheelerSpot;
 import DesignParkingLot.Models.Ticket;
 import DesignParkingLot.Models.Vehicle.FourWheelerVehicle;
 import DesignParkingLot.Models.Vehicle.TwoWheelerVehicle;
 import DesignParkingLot.Models.Vehicle.Vehicle;
-import DesignParkingLot.Strategy.PricingStrategy.FixedPricingStrategy;
-import DesignParkingLot.Strategy.PricingStrategy.MinutePricingStrategy;
-
-import java.util.List;
+import DesignParkingLot.PricingStrategy.HourlyPricingStrategy;
 
 public class DPLMain {
-    public static void main(String[] args) {
-        List<ParkingSpot> twoWheelerSpots = List.of(new TwParkingSpot(1, 20, new FixedPricingStrategy()), new TwParkingSpot(2, 30, new MinutePricingStrategy()));
-        List<ParkingSpot> fourWheelerSpots = List.of(new FwParkingSpot(3, 40, new FixedPricingStrategy()), new FwParkingSpot(3, 50, new MinutePricingStrategy()));
+    public static void main(String[] args) throws InterruptedException{
+        ParkingLot lot = ParkingLot.getInstance();
+        lot.setPricingStrategy(new HourlyPricingStrategy(30.0));
 
-        ParkingSpotManager twoWheelerManager = new TwoWheelerSpotManager(twoWheelerSpots);
-        ParkingSpotManager fourWheelerManager = new FourWheelerSpotManager(fourWheelerSpots);
-        List<ParkingSpotManager> managers = List.of(twoWheelerManager, fourWheelerManager);
-        List<ParkingFloor> floors = List.of(new ParkingFloor(1, managers));
-        ParkingLot parkingLot = new ParkingLot(floors);
-        EntryGate entryGate = new EntryGate(1, parkingLot);
+        ParkingFloor floor = new ParkingFloor(0);
+        floor.addSpot(new TwoWheelerSpot("TW1"));
+        floor.addSpot(new FourWheelerSpot("FW1"));
+        lot.addFloor(floor);
 
-        Vehicle tw = VehicleFactory.getVehicle(VehicleType.TWO_WHEELER, "KA019876");
-        Vehicle car = VehicleFactory.getVehicle(VehicleType.FOUR_WHEELER, "KA-05-C-5678");
-        Vehicle car2 = VehicleFactory.getVehicle(VehicleType.FOUR_WHEELER, "KA-05-C-5670");
-        Ticket bikeTicket = entryGate.generateTicket(tw);
-        Ticket carTicket = entryGate.generateTicket(car);
-        Ticket carTicket2 = entryGate.generateTicket(car2);
+        lot.addEntryGate("E1");
+        lot.addEntryGate("E2");
+        lot.addExitGate("X1");
 
-        System.out.println(entryGate.getspotscnt());
+        EntryGate e1 = lot.getEntryGates().get(0);
+        EntryGate e2 = lot.getEntryGates().get(1);
+        ExitGate x1 = lot.getExitGates().get(0);
 
+        Vehicle bike = new TwoWheelerVehicle("KA01");
+        Vehicle car = new FourWheelerVehicle("KA02");
+        Vehicle car2 = new FourWheelerVehicle("KA03");
+
+        Thread t1 = new Thread(() -> {
+            Ticket t = e1.enter(car2);
+            if (t != null) {
+                lot.storeTicket(t);
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                x1.exit(t.ticketId);
+            }else{
+                System.out.println("no available");
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            Ticket t = e2.enter(car);
+            if (t != null) {
+                lot.storeTicket(t);
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                x1.exit(t.ticketId);
+            }else{
+                System.out.println("no available");
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
     }
 }
