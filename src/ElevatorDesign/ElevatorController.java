@@ -1,38 +1,35 @@
 package ElevatorDesign;
 
-import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ElevatorController {
-    PriorityQueue<Integer> upMinPQ;
-    PriorityQueue<Integer> downMaxPQ;
-    ElevatorCar elevatorCar;
+    private final List<ElevatorCar> elevators;
 
-    ElevatorController(ElevatorCar elevatorCar){
-        this.elevatorCar = elevatorCar;
-        upMinPQ = new PriorityQueue<>();
-        downMaxPQ = new PriorityQueue<>((a,b) -> b-a);
-    }
-
-    public void submitExternalRequest(int floor, Direction direction){
-
-        if(direction == Direction.DOWN) {
-            downMaxPQ.offer(floor);
-        } else {
-            upMinPQ.offer(floor);
+    public ElevatorController(int numElevators, int capacity) {
+        elevators = new ArrayList<>();
+        for (int i = 0; i < numElevators; i++) {
+            ElevatorCar elevator = new ElevatorCar(i + 1, capacity);
+            elevators.add(elevator);
+            new Thread(elevator).start();
         }
     }
 
-    public void submitInternalRequest(int floor){
-
+    public void handleExternalRequest(Request req) {
+        ElevatorCar best = selectBestElevator(req.srcFloor);
+        best.handleExternalRequest(req);
     }
 
-    public void controlElevator(){
-        while(true) {
-
-            if(elevatorCar.elevatorDirection == Direction.UP){
-
-
+    private ElevatorCar selectBestElevator(int floor) {
+        ElevatorCar best = null;
+        int minDist = Integer.MAX_VALUE;
+        for (ElevatorCar e : elevators) {
+            int dist = Math.abs(floor - e.getCurrentFloor());
+            if (dist < minDist) {
+                minDist = dist;
+                best = e;
             }
         }
+        return best;
     }
 }

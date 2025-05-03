@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ElevatorMain {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException{
 
         //SCAN Algorithm (Elevator Algorithm)
         //The disk arm moves in one direction, servicing all requests until it hits the end (start or end of disk).
@@ -18,18 +18,19 @@ public class ElevatorMain {
         //Then reverses direction just like SCAN.
         //More efficient than SCAN — less unnecessary movement.
 
-        List<Floor> floorList = new ArrayList<>();
-        Floor floor1 = new Floor(1);
-        Floor floor2 = new Floor(2);
-        Floor floor3 = new Floor(3);
-        Floor floor4 = new Floor(4);
-        Floor floor5 = new Floor(5);
-        floorList.add(floor1);
-        floorList.add(floor2);
-        floorList.add(floor3);
-        floorList.add(floor4);
-        floorList.add(floor5);
+        ElevatorController controller = new ElevatorController(3, 5);
 
-        Building building = new Building(floorList);
+        // Trigger requests that are best served by different elevators
+        controller.handleExternalRequest(new Request(1, 7)); // Elevator 1
+        controller.handleExternalRequest(new Request(8, 2)); // Elevator 2
+        controller.handleExternalRequest(new Request(5, 10)); // Elevator 3
+
+        // Give some time for elevators to process
+        Thread.sleep(15000);
+
+        // More requests to keep elevators busy
+        controller.handleExternalRequest(new Request(3, 0)); // Elevator 1 again
+        controller.handleExternalRequest(new Request(9, 4)); // Elevator 2 again
+        controller.handleExternalRequest(new Request(6, 12)); // Elevator 3 again
     }
 }

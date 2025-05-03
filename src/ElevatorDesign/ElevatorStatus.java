@@ -1,6 +1,6 @@
 package ElevatorDesign;
 
-public enum ElevatorState {
+public enum ElevatorStatus {
     MOVING,
     IDLE;
 }

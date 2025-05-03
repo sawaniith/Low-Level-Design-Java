@@ -1,6 +1,6 @@
-package CarRentalSystem;
+package SnakeLadder;
 
-public class RentalMain {
+public class SLMain {
     public static void main(String[] args) {
 
     }
