@@ -15,21 +15,29 @@ public class ElevatorController {
         }
     }
 
-    public void handleExternalRequest(Request req) {
+    public void handleRequest(Request req) {
         ElevatorCar best = selectBestElevator(req.srcFloor);
-        best.handleExternalRequest(req);
+        System.out.println("📦 Assigning floor " + req.srcFloor + " → " + req.destinationFloor + " to Elevator " + best.id);
+        best.addRequest(req);
     }
 
     private ElevatorCar selectBestElevator(int floor) {
         ElevatorCar best = null;
-        int minDist = Integer.MAX_VALUE;
+        int minScore = Integer.MAX_VALUE;
+
         for (ElevatorCar e : elevators) {
-            int dist = Math.abs(floor - e.getCurrentFloor());
-            if (dist < minDist) {
-                minDist = dist;
+            int distance = Math.abs(floor - e.getCurrentFloor());
+            int load = e.getPendingRequestCount();
+
+            // Scoring: favor closer and less-burdened elevators
+            int score = distance + (load * 2);  // Tune this weight if needed
+
+            if (score < minScore) {
+                minScore = score;
                 best = e;
             }
         }
+
         return best;
     }
 }

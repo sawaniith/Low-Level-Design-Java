@@ -18,19 +18,27 @@ public class ElevatorMain {
         //Then reverses direction just like SCAN.
         //More efficient than SCAN — less unnecessary movement.
 
-        ElevatorController controller = new ElevatorController(3, 5);
+        ElevatorController controller = new ElevatorController(3, 10);
 
-        // Trigger requests that are best served by different elevators
-        controller.handleExternalRequest(new Request(1, 7)); // Elevator 1
-        controller.handleExternalRequest(new Request(8, 2)); // Elevator 2
-        controller.handleExternalRequest(new Request(5, 10)); // Elevator 3
+        // Simulate multiple requests
+        controller.handleRequest(new Request(1, 7));   // likely Elevator 1
+        Thread.sleep(500);
 
-        // Give some time for elevators to process
-        Thread.sleep(15000);
+        controller.handleRequest(new Request(3, 5));   // likely Elevator 2
+        Thread.sleep(500);
 
-        // More requests to keep elevators busy
-        controller.handleExternalRequest(new Request(3, 0)); // Elevator 1 again
-        controller.handleExternalRequest(new Request(9, 4)); // Elevator 2 again
-        controller.handleExternalRequest(new Request(6, 12)); // Elevator 3 again
+        controller.handleRequest(new Request(6, 10));  // likely Elevator 3
+        Thread.sleep(500);
+
+        controller.handleRequest(new Request(9, 2));   // assigned based on current state
+        Thread.sleep(500);
+
+        controller.handleRequest(new Request(4, 0));
+        Thread.sleep(500);
+
+        controller.handleRequest(new Request(8, 12));
+        Thread.sleep(500);
+
+        controller.handleRequest(new Request(2, 6));
     }
 }

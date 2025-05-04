@@ -3,97 +3,103 @@ package ElevatorDesign;
 import java.util.*;
 
 class ElevatorCar implements Runnable {
-    private final int id;
-    private int currentFloor = 0;
-    private Direction direction = Direction.IDLE;
-    private ElevatorStatus status = ElevatorStatus.IDLE;
+    public final int id;
     private final int capacity;
+    private int currentFloor;
+    private Direction currentDirection;
 
-    private final PriorityQueue<Integer> upQueue = new PriorityQueue<>();
-    private final PriorityQueue<Integer> downQueue = new PriorityQueue<>(Comparator.reverseOrder());
-    private final Set<Integer> deferredUp = new HashSet<>();
-    private final Set<Integer> deferredDown = new HashSet<>();
-    private final Object lock = new Object();
+    private final PriorityQueue<Integer> upStops = new PriorityQueue<>();
+    private final PriorityQueue<Integer> downStops = new PriorityQueue<>(Comparator.reverseOrder());
 
-    private final ElevatorDoor door = new ElevatorDoor();
+    private final Set<Integer> upScheduled = new HashSet<>();
+    private final Set<Integer> downScheduled = new HashSet<>();
+
+    private final Set<Request> deferredRequests = new HashSet<>();
 
     public ElevatorCar(int id, int capacity) {
         this.id = id;
         this.capacity = capacity;
+        this.currentFloor = 0;
+        this.currentDirection = Direction.IDLE;
     }
 
-    public void handleExternalRequest(Request req) {
-        synchronized (lock) {
-            int src = req.srcFloor;
-            int dest = req.destinationFloor;
-            Direction reqDir = (dest > src) ? Direction.UP : Direction.DOWN;
+    public synchronized void addRequest(Request request) {
+        int src = request.srcFloor;
+        int dest = request.destinationFloor;
+        Direction reqDir = (dest > src) ? Direction.UP : Direction.DOWN;
 
-            // Set the direction for the initial movement
-            if (status == ElevatorStatus.IDLE) {
-                direction = (src > currentFloor) ? Direction.UP : Direction.DOWN;
+        if (currentDirection == Direction.IDLE) {
+            currentDirection = (src > currentFloor) ? Direction.UP : Direction.DOWN;
+        }
+
+        if (currentDirection == reqDir &&
+                ((currentDirection == Direction.UP && src >= currentFloor) ||
+                        (currentDirection == Direction.DOWN && src <= currentFloor))) {
+            addStop(src);
+            addStop(dest);
+        } else {
+            deferredRequests.add(request);
+        }
+
+        notifyAll();
+    }
+
+    private void addStop(int floor) {
+        // Avoid adding stop if it's already at the current floor
+        if (floor == currentFloor) return;
+
+        // Check and add stop for the UP direction
+        if (floor > currentFloor) {
+            if (!upScheduled.contains(floor)) {
+                upScheduled.add(floor);  // Add to the set to mark as scheduled
+                upStops.offer(floor);     // Add to the priority queue for processing
             }
-
-            // Add source floor first
-            if (direction == Direction.UP) {
-                if (src > currentFloor && reqDir == Direction.UP) {
-                    upQueue.offer(src);
-                } else {
-                    deferredDown.add(src);
-                }
-            } else if (direction == Direction.DOWN) {
-                if (src < currentFloor && reqDir == Direction.DOWN) {
-                    downQueue.offer(src);
-                } else {
-                    deferredUp.add(src);
-                }
+        }
+        // Check and add stop for the DOWN direction
+        else {
+            if (!downScheduled.contains(floor)) {
+                downScheduled.add(floor); // Add to the set to mark as scheduled
+                downStops.offer(floor);   // Add to the priority queue for processing
             }
-
-            // Always enqueue the destination floor
-            if (reqDir == Direction.UP) upQueue.offer(dest);
-            else downQueue.offer(dest);
-
-            lock.notify(); // Wake thread to start moving
         }
     }
 
-    private void goToFloor(int floor) throws InterruptedException {
-        System.out.printf("🚗 ElevatorCar %d moving from floor %d to %d%n", id, currentFloor, floor);
-        Thread.sleep(1000); // Simulate time taken to move
-        currentFloor = floor;
-        door.openDoor(); // Open the door when arriving at a floor
-        Thread.sleep(500); // Simulate time for doors open
-        door.closeDoor(); // Close the door after the stop
+    private void openAndCloseDoors(int floor) throws InterruptedException {
+        System.out.println("🚪 Elevator " + id + " opening doors at floor " + floor);
+        Thread.sleep(1000);
+        System.out.println("🚪 Elevator " + id + " closing doors at floor " + floor);
     }
 
     @Override
     public void run() {
         while (true) {
-            synchronized (lock) {
-                while (upQueue.isEmpty() && downQueue.isEmpty() && deferredUp.isEmpty() && deferredDown.isEmpty()) {
-                    status = ElevatorStatus.IDLE;
-                    direction = Direction.IDLE;
+
+            synchronized (this) {
+                if (upStops.isEmpty() && downStops.isEmpty() && deferredRequests.isEmpty()) {
+                    currentDirection = Direction.IDLE;
                     try {
-                        lock.wait(); // Wait until there are requests
+                        wait();  // This wait will now work because it is inside the synchronized block
                     } catch (InterruptedException ignored) {}
                 }
-                status = ElevatorStatus.MOVING;
             }
 
             try {
-                if (direction == Direction.UP) {
-                    processUpQueue();
-                    if (downQueue.isEmpty() && !deferredDown.isEmpty()) {
-                        downQueue.addAll(deferredDown);
-                        deferredDown.clear();
+                if (currentDirection == Direction.UP) {
+                    while (!upStops.isEmpty()) {
+                        int next = upStops.poll();
+                        upScheduled.remove(next);
+                        moveTo(next);
                     }
-                    direction = Direction.DOWN;
-                } else if (direction == Direction.DOWN) {
-                    processDownQueue();
-                    if (upQueue.isEmpty() && !deferredUp.isEmpty()) {
-                        upQueue.addAll(deferredUp);
-                        deferredUp.clear();
+                    promoteDeferredRequests(Direction.DOWN);
+                    currentDirection = Direction.DOWN;
+                } else if (currentDirection == Direction.DOWN) {
+                    while (!downStops.isEmpty()) {
+                        int next = downStops.poll();
+                        downScheduled.remove(next);
+                        moveTo(next);
                     }
-                    direction = Direction.UP;
+                    promoteDeferredRequests(Direction.UP);
+                    currentDirection = Direction.UP;
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -101,21 +107,40 @@ class ElevatorCar implements Runnable {
         }
     }
 
-    private void processUpQueue() throws InterruptedException {
-        while (!upQueue.isEmpty()) {
-            int next = upQueue.poll();
-            goToFloor(next);
-        }
+    private void moveTo(int floor) throws InterruptedException {
+        System.out.printf("🚗 Elevator %d moving from %d to %d%n", id, currentFloor, floor);
+        Thread.sleep(1000);
+        currentFloor = floor;
+        openAndCloseDoors(floor);
     }
 
-    private void processDownQueue() throws InterruptedException {
-        while (!downQueue.isEmpty()) {
-            int next = downQueue.poll();
-            goToFloor(next);
+    private synchronized void promoteDeferredRequests(Direction dir) {
+        List<Request> promoted = new ArrayList<>();
+        for (Request req : deferredRequests) {
+            int src = req.srcFloor;
+            int dest = req.destinationFloor;
+            Direction reqDir = (dest > src) ? Direction.UP : Direction.DOWN;
+
+            if (reqDir == dir &&
+                    ((dir == Direction.UP && src >= currentFloor) ||
+                            (dir == Direction.DOWN && src <= currentFloor))) {
+                addStop(src);
+                addStop(dest);
+                promoted.add(req);
+            }
         }
+        deferredRequests.removeAll(promoted);
     }
 
     public int getCurrentFloor() {
         return currentFloor;
+    }
+
+    public Direction getCurrentDirection() {
+        return currentDirection;
+    }
+
+    public int getPendingRequestCount() {
+        return upStops.size() + downStops.size();
     }
 }
