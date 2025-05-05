@@ -20,7 +20,7 @@ class GenericCache<K, V> {
         this.ttlMillis = ttlMillis;
         this.evictionPolicy = evictionSupplier;
 
-        cleaner = Executors.newScheduledThreadPool(1);
+        cleaner = Executors.newSingleThreadScheduledExecutor();
         if (useTTL) {
             cleaner.scheduleAtFixedRate(() -> removeExpiredKeys(), ttlMillis / 2, ttlMillis / 2, TimeUnit.MILLISECONDS);
         }

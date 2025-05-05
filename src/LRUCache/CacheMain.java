@@ -14,7 +14,7 @@ public class CacheMain {
         lruTtlCache.get(1);
         Thread.sleep(1000);
         lruTtlCache.put(4, "f");
-        Thread.sleep(1000); // TTL expiry
+        Thread.sleep(4000); // TTL expiry
         lruTtlCache.display(); // Should be empty
         lruTtlCache.shutdown();
 
