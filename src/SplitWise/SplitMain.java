@@ -56,7 +56,7 @@ public class SplitMain {
             System.out.println(entry.getKey() + ": " + balance);
         }
 
-        System.out.println("-------------------------");
+        System.out.println("----------After Settlement-------------");
 
         //Settle balances
         splitwiseService.settleBalance(user2.getId(), user1.getId(), group);
