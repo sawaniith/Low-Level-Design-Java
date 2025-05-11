@@ -7,13 +7,13 @@ public class Warehouse {
     Address address;
 
     //update inventory
-    public void removeItemFromInventory(Map<Integer, Integer> productCategoryAndCountMap){
+    public void removeItemFromInventory(Map<Integer, Integer> productAndCountMap){
 
         //it will update the items in the inventory based upon product category.
-        inventory.removeItems(productCategoryAndCountMap);
+        inventory.removeItems(productAndCountMap);
     }
 
-    public void addItemToInventory(Map<Integer, Integer> productCategoryAndCountMap){
+    public void addItemToInventory(Map<Integer, Integer> productAndCountMap){
 
         //it will update the items in the inventory based upon product category.
     }

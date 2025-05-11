@@ -13,7 +13,7 @@ public class Order {
 
     Order(User user, Warehouse warehouse){
         this.user = user;
-        this.productCategoryAndCountMap = user.getUserCart().getCartItems();
+        this.productAndCountMap = user.getUserCart().getCartItems();
         this.warehouse = warehouse;
         this.deliveryAddress = user.address;
         invoice = new Invoice();
@@ -23,7 +23,7 @@ public class Order {
     public void checkout(){
 
         //1. update inventory
-        warehouse.removeItemFromInventory(productCategoryAndCountMap);
+        warehouse.removeItemFromInventory(productAndCountMap);
 
         //2. make Payment
         boolean isPaymentSuccess = makePayment(new UPIPaymentMode());
@@ -33,9 +33,8 @@ public class Order {
             user.getUserCart().emptyCart();
         }
         else{
-            warehouse.addItemToInventory(productCategoryAndCountMap);
+            warehouse.addItemToInventory(productAndCountMap);
         }
-
     }
 
     public boolean makePayment(PaymentMode paymentMode){

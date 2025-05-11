@@ -21,38 +21,22 @@ public class Inventory {
 
 
     //add product to the particular category
-    public void addProduct(Product product, int productCategoryId){
-
-        //take out the respective productCategory Object
-        ProductCategory categoryObject = null;
-        for(ProductCategory category : productCategoryList)
-        {
-            if(category.productCategoryId == productCategoryId){
-                categoryObject = category;
-            }
-        }
-
-        if(categoryObject !=null) {
-            categoryObject.addProduct(product);
-        }
+    public void addProduct(Product product){
+        productList.add(product);
     }
 
-    //remove product from the category
-    public void removeItems(Map<Integer, Integer> productCategoryAndCountMap){
+    //remove product count from the product post checkout
+    public void removeItems(Map<Integer, Integer> productAndCountMap){
 
-        for(Map.Entry<Integer, Integer> entry : productCategoryAndCountMap.entrySet())
-        {
-            ProductCategory category = getProductCategoryFromID(entry.getKey());
-            category.removeProduct(entry.getValue());
-        }
+        //
 
     }
 
     private ProductCategory getProductCategoryFromID(int productCategoryId){
 
-        for(ProductCategory productCategory : productCategoryList){
+        for(ProductCategory productCategory : productCategories){
 
-            if(productCategory.productCategoryId == productCategoryId){
+            if(productCategory.getId() == productCategoryId){
                 return productCategory;
             }
         }

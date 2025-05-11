@@ -7,31 +7,31 @@ public class Cart {
     Map<Integer, Integer> productIdVsCountMap;
 
     public Cart(){
-        productCategoryIdVsCountMap = new HashMap<>();
+        productIdVsCountMap = new HashMap<>();
     }
 
     //add item to cart
-    public void addItemInCart(int productCategoryId, int count){
+    public void addItemInCart(int productId, int count){
 
-        if(productCategoryIdVsCountMap.containsKey(productCategoryId)){
-            int noOfItemsInCart = productCategoryIdVsCountMap.get(productCategoryId);
-            productCategoryIdVsCountMap.put(productCategoryId, noOfItemsInCart + count);
+        if(productIdVsCountMap.containsKey(productId)){
+            int noOfItemsInCart = productIdVsCountMap.get(productId);
+            productIdVsCountMap.put(productId, noOfItemsInCart + count);
         } else{
-            productCategoryIdVsCountMap.put(productCategoryId, count);
+            productIdVsCountMap.put(productId, count);
         }
     }
 
 
     //remove item to cart
-    public void removeItemFromCart(int productCategoryId, int count) {
+    public void removeItemFromCart(int productId, int count) {
 
-        if (productCategoryIdVsCountMap.containsKey(productCategoryId))
+        if (productIdVsCountMap.containsKey(productId))
         {
-            int noOfItemsInCart = productCategoryIdVsCountMap.get(productCategoryId);
+            int noOfItemsInCart = productIdVsCountMap.get(productId);
             if (count - noOfItemsInCart == 0) {
-                productCategoryIdVsCountMap.remove(productCategoryId);
+                productIdVsCountMap.remove(productId);
             } else {
-                productCategoryIdVsCountMap.put(productCategoryId, noOfItemsInCart - count);
+                productIdVsCountMap.put(productId, noOfItemsInCart - count);
             }
         }
     }
@@ -39,12 +39,11 @@ public class Cart {
 
     //empty my cart
     public void emptyCart(){
-        productCategoryIdVsCountMap = new HashMap<>();
+        productIdVsCountMap = new HashMap<>();
     }
 
     //View Cart
     public Map<Integer, Integer> getCartItems(){
-
-        return productCategoryIdVsCountMap;
+        return productIdVsCountMap;
     }
 }

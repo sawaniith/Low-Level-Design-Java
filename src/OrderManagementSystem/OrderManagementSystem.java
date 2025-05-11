@@ -35,9 +35,9 @@ public class OrderManagementSystem {
     }
 
     //add product to cart
-    public void addProductToCart(User user, ProductCategory product, int count){
+    public void addProductToCart(User user, Product product, int count){
         Cart cart = user.getUserCart();
-        cart.addItemInCart(product.productCategoryId, count);
+        cart.addItemInCart(product.getId(), count);
     }
 
     //place order

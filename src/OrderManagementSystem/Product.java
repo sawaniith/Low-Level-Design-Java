@@ -1,13 +1,13 @@
 package OrderManagementSystem;
 
 public class Product {
-    private String id;
+    private int id;
     private String name;
     private ProductCategory productCategory;
     private double price;
     private int quantity;
 
-    public Product(String id, String name, ProductCategory productCategory, double price, int quantity) {
+    public Product(int id, String name, ProductCategory productCategory, double price, int quantity) {
         this.id = id;
         this.name = name;
         this.productCategory = productCategory;
@@ -16,7 +16,7 @@ public class Product {
     }
 
     // Getters and Setters
-    public String getId() { return id; }
+    public int getId() { return id; }
 
     public String getName() { return name; }
 
