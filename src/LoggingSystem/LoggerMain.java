@@ -1,4 +1,4 @@
-package LoggerDesign;
+package LoggingSystem;
 
 public class LoggerMain {
     public static void main(String[] args) {
