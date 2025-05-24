@@ -1,6 +1,6 @@
 package DistributedJobScheduler;
 
-public class TaksMain {
+public class JobMain {
     public static void main(String[] args) {
 
     }
