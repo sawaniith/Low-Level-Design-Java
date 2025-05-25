@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 public class InventoryService {
-    private Map<String, Product> productMap = new HashMap<>();
-    private Map<Integer, Warehouse> warehouseMap = new HashMap<>();
-    private Map<String, Inventory> inventoryMap = new HashMap<>();
-    private List<Transaction> transactions = new ArrayList<>();
+    private final Map<String, Product> productMap = new HashMap<>();
+    private final Map<Integer, Warehouse> warehouseMap = new HashMap<>();
+    private final Map<String, Inventory> inventoryMap = new HashMap<>();
+    private final List<Transaction> transactions = new ArrayList<>();
     private int inventoryId = 1;
     private int transactionId = 1;
 
