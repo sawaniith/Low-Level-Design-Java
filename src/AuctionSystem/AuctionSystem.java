@@ -1,4 +1,4 @@
-package OnlineAuctionSystem;
+package AuctionSystem;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

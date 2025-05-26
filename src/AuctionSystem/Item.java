@@ -1,4 +1,4 @@
-package OnlineAuctionSystem;
+package AuctionSystem;
 
 public class Item {
     private final String name;

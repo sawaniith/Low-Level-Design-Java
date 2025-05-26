@@ -1,4 +1,4 @@
-package OnlineAuctionSystem;
+package AuctionSystem;
 
 public enum AuctionStatus {
     ACTIVE,

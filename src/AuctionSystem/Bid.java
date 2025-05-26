@@ -1,4 +1,4 @@
-package OnlineAuctionSystem;
+package AuctionSystem;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
