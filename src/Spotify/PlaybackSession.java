@@ -88,8 +88,20 @@ public class PlaybackSession {
 
     private synchronized void startPlaybackTimer() {
         scheduledTask = scheduler.scheduleAtFixedRate(() -> {
-            if (isPlaying) {
+            if (isPlaying && currentSong != null) {
                 currentTime++;
+                if (currentTime >= currentSong.getDuration()) {
+                    if (currentPlaylist != null && currentIndex < currentPlaylist.size() - 1) {
+                        currentIndex++;
+                        currentSong = currentPlaylist.get(currentIndex);
+                        currentTime = 0;
+                        System.out.println("Auto playing next song: " + currentSong.getTitle());
+                    } else {
+                        System.out.println("Playback finished.");
+                        stopPlaybackTask();
+                        isPlaying = false;
+                    }
+                }
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
